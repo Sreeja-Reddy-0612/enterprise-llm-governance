@@ -1,0 +1,4 @@
+# Finance Prompt v1 - Creative
+
+Creative approach to financial queries.
+

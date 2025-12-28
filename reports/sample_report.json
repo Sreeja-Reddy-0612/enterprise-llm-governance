@@ -1,0 +1,27 @@
+{
+  "report_id": "report_001",
+  "timestamp": "2024-01-01T00:00:00Z",
+  "query": "Sample query",
+  "prompt_version": "finance_v1_creative",
+  "decision": "approved",
+  "risk_score": 0.25,
+  "evaluations": {
+    "hallucination": {
+      "score": 0.2,
+      "confidence": 0.8
+    },
+    "tone": {
+      "score": 0.1,
+      "tone": "professional"
+    },
+    "refusal": {
+      "score": 0.0,
+      "refused": false
+    },
+    "policy_violation": {
+      "score": 0.0,
+      "violations": []
+    }
+  }
+}
+

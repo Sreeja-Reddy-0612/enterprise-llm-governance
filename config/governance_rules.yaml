@@ -1,0 +1,30 @@
+# Governance Rules Configuration
+
+# Risk scoring weights
+risk_weights:
+  hallucination: 0.3
+  tone: 0.1
+  refusal: 0.2
+  policy_violation: 0.4
+
+# Risk threshold for approval
+risk_threshold: 0.5
+
+# Policy rules
+policy_rules:
+  - name: "no_financial_advice"
+    description: "Responses should not provide specific financial advice"
+    severity: "high"
+  
+  - name: "professional_tone"
+    description: "Responses must maintain a professional tone"
+    severity: "medium"
+
+# Tone requirements
+tone_requirements:
+  expected_tone: "professional"
+  allowed_tones:
+    - "professional"
+    - "informative"
+    - "neutral"
+

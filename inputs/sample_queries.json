@@ -1,0 +1,10 @@
+{
+  "queries": [
+    {
+      "id": "query_001",
+      "text": "What is the current market outlook?",
+      "category": "finance"
+    }
+  ]
+}
+

@@ -1,0 +1,4 @@
+# Finance Prompt v3 - Strict
+
+Strict approach to financial queries.
+

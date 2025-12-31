@@ -9,6 +9,7 @@ function App() {
   const [error, setError] = useState(null);
 
   const handleEvaluate = async () => {
+    // Reset UI
     setError(null);
     setResult(null);
 
@@ -18,35 +19,41 @@ function App() {
     }
 
     setLoading(true);
-    console.log("Sending request to backend...");
+
+    // ⏱️ Timeout protection (VERY IMPORTANT)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 sec
 
     try {
-      const response = await fetch("http://localhost:8000/evaluate", {
+      const response = await fetch("http://127.0.0.1:8000/evaluate", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
+        signal: controller.signal,
         body: JSON.stringify({
           prompt_version: promptVersion,
-          question: question
-        })
+          question: question,
+        }),
       });
-
-      console.log("HTTP status:", response.status);
 
       if (!response.ok) {
         throw new Error(`Backend error: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("Backend response:", data);
-
       setResult(data);
     } catch (err) {
-      console.error("Fetch error:", err);
-      setError("Failed to connect to backend. Check console.");
+      console.error("Request failed:", err);
+
+      if (err.name === "AbortError") {
+        setError("Request timed out. Backend may be down.");
+      } else {
+        setError("Failed to connect to backend.");
+      }
     } finally {
-      setLoading(false);
+      clearTimeout(timeoutId);
+      setLoading(false); // 🔑 THIS PREVENTS STUCK UI
     }
   };
 
@@ -85,9 +92,12 @@ function App() {
       {result && (
         <div className="result">
           <h2>Decision</h2>
-          <p><strong>Risk Level:</strong> {result.risk_level}</p>
-          <p><strong>Approved:</strong> {result.approved ? "Yes" : "No"}</p>
-
+          <p>
+            <strong>Risk Level:</strong> {result.risk_level}
+          </p>
+          <p>
+            <strong>Approved:</strong> {result.approved ? "Yes" : "No"}
+          </p>
           <ul>
             {result.reasons.map((r, i) => (
               <li key={i}>{r}</li>

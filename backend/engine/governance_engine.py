@@ -1,45 +1,43 @@
-from evaluators import (
-    HallucinationEvaluator,
-    ToneEvaluator,
-    DeterminismEvaluator,
-    RefusalEvaluator,
-    PolicyEvaluator,
-)
+from evaluators.hallucination import HallucinationEvaluator
+from evaluators.determinism import DeterminismEvaluator
+from evaluators.policy import PolicyEvaluator
 
 class GovernanceEngine:
     def __init__(self):
-        # Initialize all evaluators once
         self.evaluators = [
             HallucinationEvaluator(),
-            ToneEvaluator(),
             DeterminismEvaluator(),
-            RefusalEvaluator(),
-            PolicyEvaluator(),
+            PolicyEvaluator()
         ]
 
     def run(self, text: str):
-        reasons = []
+        all_results = []
 
-        # Run each evaluator safely (NO blocking possible)
         for evaluator in self.evaluators:
             try:
-                findings = evaluator.evaluate(text)
+                results = evaluator.evaluate(text)
+                all_results.extend(results)
+            except Exception:
+                all_results.append({
+                    "id": "SYSTEM_FAIL",
+                    "severity": "HIGH",
+                    "message": "Evaluator failed safely"
+                })
 
-                # Ensure evaluator always returns a list
-                if findings:
-                    reasons.extend(findings)
-
-            except Exception as e:
-                # Defensive guard — evaluator failure should NOT break system
-                reasons.append(
-                    f"{evaluator.__class__.__name__} failed safely"
-                )
-
-        # ---------- Risk decision logic (TOTAL & GUARANTEED) ----------
-        if not reasons:
+        if not all_results:
             return "LOW", True, ["No governance issues detected"]
 
-        if len(reasons) == 1:
-            return "MEDIUM", False, reasons
+        severity_levels = [r.severity for r in all_results]
 
-        return "HIGH", False, reasons
+        if "HIGH" in severity_levels:
+            risk = "HIGH"
+        elif "MEDIUM" in severity_levels:
+            risk = "MEDIUM"
+        else:
+            risk = "LOW"
+
+        approved = risk == "LOW"
+
+        reasons = [r.message for r in all_results]
+
+        return risk, approved, reasons

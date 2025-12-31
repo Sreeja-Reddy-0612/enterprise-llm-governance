@@ -1,8 +1,20 @@
+from engine.evaluation_result import EvaluationResult
+
 class HallucinationEvaluator:
+    SPECULATIVE_WORDS = ["likely", "probably", "may", "might", "could"]
+
     def evaluate(self, text: str):
-        keywords = ["maybe", "likely", "probably", "might"]
+        results = []
 
-        if any(word in text for word in keywords):
-            return ["Speculative language detected"]
+        for word in self.SPECULATIVE_WORDS:
+            if word in text:
+                results.append(
+                    EvaluationResult(
+                        id="HALLUCINATION_01",
+                        severity="MEDIUM",
+                        message=f"Speculative language detected ('{word}')"
+                    )
+                )
+                break
 
-        return []
+        return results

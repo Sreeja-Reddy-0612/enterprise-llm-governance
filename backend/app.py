@@ -29,9 +29,7 @@ class EvaluateResponse(BaseModel):
 # ---------- API Endpoint ----------
 @app.post("/evaluate", response_model=EvaluateResponse)
 def evaluate_prompt(data: EvaluateRequest):
-    print("➡️ Received request")
     risk, approved, reasons = engine.run(data.question.lower())
-    print("✅ Engine completed")
     return {
         "risk_level": risk,
         "approved": approved,

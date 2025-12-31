@@ -1,44 +1,33 @@
 from evaluators.hallucination import HallucinationEvaluator
 from evaluators.determinism import DeterminismEvaluator
 from evaluators.policy import PolicyEvaluator
+from engine.evaluation_result import EvaluationResult
 
 class GovernanceEngine:
     def __init__(self):
-        self.evaluators = [
-            HallucinationEvaluator(),
-            DeterminismEvaluator(),
-            PolicyEvaluator()
-        ]
+        self.hallucination = HallucinationEvaluator()
+        self.determinism = DeterminismEvaluator()
+        self.policy = PolicyEvaluator()
 
     def run(self, text: str):
-        all_results = []
+        reasons: list[str] = []
 
-        for evaluator in self.evaluators:
-            try:
-                results = evaluator.evaluate(text)
-                all_results.extend(results)
-            except Exception:
-                all_results.append({
-                    "id": "SYSTEM_FAIL",
-                    "severity": "HIGH",
-                    "message": "Evaluator failed safely"
-                })
+        # --- Hallucination ---
+        for r in self.hallucination.evaluate(text):
+            reasons.append(r.message)
 
-        if not all_results:
+        # --- Determinism ---
+        for r in self.determinism.evaluate(text):
+            reasons.append(r.message)
+
+        # --- Policy ---
+        for r in self.policy.evaluate(text):
+            reasons.append(r.message)
+
+        # --- Risk decision ---
+        if not reasons:
             return "LOW", True, ["No governance issues detected"]
-
-        severity_levels = [r.severity for r in all_results]
-
-        if "HIGH" in severity_levels:
-            risk = "HIGH"
-        elif "MEDIUM" in severity_levels:
-            risk = "MEDIUM"
+        elif len(reasons) == 1:
+            return "MEDIUM", False, reasons
         else:
-            risk = "LOW"
-
-        approved = risk == "LOW"
-
-        reasons = [r.message for r in all_results]
-
-
-        return risk, approved, reasons
+            return "HIGH", False, reasons

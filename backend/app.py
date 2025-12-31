@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
+from typing import List , Dict
 from engine.governance_engine import GovernanceEngine
 
 engine = GovernanceEngine()
@@ -21,10 +21,11 @@ class EvaluateRequest(BaseModel):
     prompt_version: str
     question: str
 
+
 class EvaluateResponse(BaseModel):
     risk_level: str
     approved: bool
-    reasons: List[str]
+    reasons: List[Dict]
 
 # ---------- API Endpoint ----------
 @app.post("/evaluate", response_model=EvaluateResponse)

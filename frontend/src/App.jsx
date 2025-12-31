@@ -90,21 +90,32 @@ function App() {
       )}
 
       {result && (
-        <div className="result">
-          <h2>Decision</h2>
-          <p>
-            <strong>Risk Level:</strong> {result.risk_level}
-          </p>
-          <p>
-            <strong>Approved:</strong> {result.approved ? "Yes" : "No"}
-          </p>
-          <ul>
-            {result.reasons.map((r, i) => (
-              <li key={i}>{r}</li>
-            ))}
-          </ul>
-        </div>
-      )}
+  <div className="result">
+    <h2>Decision</h2>
+
+    <p>
+      <strong>Risk Level:</strong> {result.risk_level}
+    </p>
+
+    <p>
+      <strong>Approved:</strong> {result.approved ? "Yes" : "No"}
+    </p>
+
+    <h3>Governance Findings</h3>
+
+    <ul>
+      {result.reasons.map((r, i) => (
+        <li key={i} style={{ marginBottom: "12px" }}>
+          <strong>Category:</strong> {r.category}<br />
+          <strong>Severity:</strong> {r.severity}<br />
+          <strong>Explanation:</strong> {r.explanation}<br />
+          <strong>Recommendation:</strong> {r.recommendation}
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+
     </div>
   );
 }

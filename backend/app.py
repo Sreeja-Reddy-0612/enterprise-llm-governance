@@ -2,9 +2,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List
+from datetime import datetime
 from engine.governance_engine import GovernanceEngine
-from engine.audit_models import AuditRecord
-from engine.audit_logger import log_audit
+from audit.audit_logger import log_audit_event
 
 app = FastAPI(title="Enterprise LLM Governance API")
 engine = GovernanceEngine()
@@ -28,6 +28,7 @@ class Finding(BaseModel):
     category: str
     severity: str
     message: str
+    evaluator: str
 
 class VersionResult(BaseModel):
     risk: str
@@ -37,6 +38,7 @@ class VersionResult(BaseModel):
 class CompareResponse(BaseModel):
     comparisons: Dict[str, VersionResult]
     recommended_version: str
+    timestamp: str
 
 class EvaluateRequest(BaseModel):
     prompt_version: str
@@ -44,26 +46,13 @@ class EvaluateRequest(BaseModel):
 
 
 # ---------- API Endpoint ----------
-@app.post("/compare")
+@app.post("/compare", response_model=CompareResponse)
 def compare_prompt_versions(data: EvaluateRequest):
     versions = ["v1", "v2", "v3"]
     comparisons = {}
 
     for v in versions:
         risk, approved, reasons = engine.run(data.question.lower(), v)
-
-        record = AuditRecord(
-            evaluation_id=AuditRecord.create_id(),
-            prompt_version=v,
-            question=data.question,
-            risk_level=risk,
-            approved=approved,
-            reasons=reasons,
-            timestamp=AuditRecord.now()
-        )
-
-        log_audit(record)
-
         comparisons[v] = {
             "risk": risk,
             "approved": approved,
@@ -75,7 +64,18 @@ def compare_prompt_versions(data: EvaluateRequest):
         key=lambda v: ["LOW", "MEDIUM", "HIGH"].index(comparisons[v]["risk"])
     )
 
+    # Evaluate timestamp and audit log
+    evaluated_at = datetime.utcnow().isoformat()
+
+    # 🔐 AUDIT LOGGING (Phase 6 – Step 1)
+    log_audit_event(
+        question=data.question,
+        comparisons=comparisons,
+        recommended_version=recommended
+    )
+
     return {
         "comparisons": comparisons,
-        "recommended_version": recommended
+        "recommended_version": recommended,
+        "timestamp": evaluated_at,
     }

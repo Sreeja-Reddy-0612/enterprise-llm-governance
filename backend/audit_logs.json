@@ -1,0 +1,78 @@
+[
+  {
+    "timestamp": "2026-01-13T06:51:19.423072",
+    "question": "This regulation will likely apply to most companies.",
+    "results": {
+      "v1": {
+        "risk": "MEDIUM",
+        "approved": false
+      },
+      "v2": {
+        "risk": "MEDIUM",
+        "approved": false
+      },
+      "v3": {
+        "risk": "MEDIUM",
+        "approved": false
+      }
+    },
+    "recommended_version": "v1"
+  },
+  {
+    "timestamp": "2026-01-13T06:56:59.617126",
+    "question": "This regulation will likely apply to most companies.",
+    "results": {
+      "v1": {
+        "risk": "MEDIUM",
+        "approved": false
+      },
+      "v2": {
+        "risk": "MEDIUM",
+        "approved": false
+      },
+      "v3": {
+        "risk": "MEDIUM",
+        "approved": false
+      }
+    },
+    "recommended_version": "v1"
+  },
+  {
+    "timestamp": "2026-01-13T06:59:18.895305",
+    "question": "This regulation will likely apply to most companies.",
+    "results": {
+      "v1": {
+        "risk": "MEDIUM",
+        "approved": false
+      },
+      "v2": {
+        "risk": "MEDIUM",
+        "approved": false
+      },
+      "v3": {
+        "risk": "MEDIUM",
+        "approved": false
+      }
+    },
+    "recommended_version": "v1"
+  },
+  {
+    "timestamp": "2026-01-13T07:04:53.668587",
+    "question": "This regulation will likely apply to most companies.",
+    "results": {
+      "v1": {
+        "risk": "MEDIUM",
+        "approved": false
+      },
+      "v2": {
+        "risk": "MEDIUM",
+        "approved": false
+      },
+      "v3": {
+        "risk": "MEDIUM",
+        "approved": false
+      }
+    },
+    "recommended_version": "v1"
+  }
+]

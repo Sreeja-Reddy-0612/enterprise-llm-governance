@@ -88,6 +88,10 @@ function App() {
 
       {result && (
         <div className="result">
+          <p style={{ color: "#555", fontSize: "14px" }}>
+            Evaluated at: {new Date(result.timestamp).toLocaleString()}
+          </p>
+
           <h2>Prompt Version Comparison</h2>
 
           {Object.entries(result.comparisons).map(([version, res]) => (

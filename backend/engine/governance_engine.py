@@ -1,9 +1,8 @@
-from engine.audit_models import AuditRecord, AuditReason
-from engine.audit_logger import log_audit
-
 from evaluators.hallucination import HallucinationEvaluator
 from evaluators.policy import PolicyEvaluator
 from evaluators.determinism import DeterminismEvaluator
+from policies.policy_loader import get_active_policy
+
 
 class GovernanceEngine:
     def __init__(self):
@@ -11,52 +10,49 @@ class GovernanceEngine:
         self.policy = PolicyEvaluator()
         self.determinism = DeterminismEvaluator()
 
-    def run(self, text: str, version: str):
+    def run(self, text: str, prompt_version: str):
+        policy_version, policy = get_active_policy()
         reasons = []
 
-        for r in self.hallucination.evaluate(text):
-            reasons.append(
-                AuditReason(
-                    evaluator="HallucinationEvaluator",
-                    category="Hallucination Risk",
-                    severity=r.severity,
-                    message=r.message
-                )
-            )
+        if "likely" in text:
+            reasons.append({
+                "evaluator": "HallucinationEvaluator",
+                "category": "Hallucination Risk",
+                "severity": policy["hallucination_threshold"],
+                "message": "Speculative language detected ('likely')"
+            })
 
-        for r in self.policy.evaluate(text):
-            reasons.append(
-                AuditReason(
-                    evaluator="PolicyEvaluator",
-                    category="Policy Violation",
-                    severity=r.severity,
-                    message=r.message
-                )
-            )
+        risk = (
+            "HIGH" if any(r["severity"] == "HIGH" for r in reasons)
+            else "MEDIUM" if reasons
+            else "LOW"
+        )
 
-        for r in self.determinism.evaluate(text):
-            reasons.append(
-                AuditReason(
-                    evaluator="DeterminismEvaluator",
-                    category="Non-determinism",
-                    severity=r.severity,
-                    message=r.message
-                )
-            )
+        approved = risk == "LOW"
 
-        if not reasons:
-            risk = "LOW"
-            approved = True
-            reasons.append(
-                AuditReason(
-                    evaluator="System",
-                    category="No Risk",
-                    severity="LOW",
-                    message="No governance issues detected"
-                )
-            )
-        else:
-            risk = "HIGH" if any(r.severity == "HIGH" for r in reasons) else "MEDIUM"
-            approved = False
+        return risk, approved, reasons, policy_version
 
-        return risk, approved, reasons
+    def run_with_policy(self, text: str, policy: dict):
+        reasons = []
+
+        if "likely" in text:
+            reasons.append({
+                "evaluator": "HallucinationEvaluator",
+                "category": "Hallucination Risk",
+                "severity": policy["hallucination_threshold"],
+                "message": "Speculative language detected ('likely')"
+            })
+
+        risk = (
+            "HIGH" if any(r["severity"] == "HIGH" for r in reasons)
+            else "MEDIUM" if reasons
+            else "LOW"
+        )
+
+        approved = risk == "LOW"
+
+        return {
+            "risk": risk,
+            "approved": approved,
+            "reasons": reasons
+        }

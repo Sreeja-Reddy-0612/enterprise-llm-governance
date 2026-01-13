@@ -1,0 +1,13 @@
+{
+  "active_version": "v1",
+  "versions": {
+    "v1": {
+      "hallucination_threshold": "MEDIUM",
+      "description": "Default governance policy"
+    },
+    "v2": {
+      "hallucination_threshold": "HIGH",
+      "description": "Strict governance policy"
+    }
+  }
+}

@@ -1,12 +1,14 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Dict, List
+from typing import Dict, List, Optional
 from datetime import datetime
 
 from engine.governance_engine import GovernanceEngine
 from audit.audit_logger import log_audit_event
 from audit.audit_store import get_audits, get_audit_by_index
+from policies.policy_loader import load_policies
+from policies.policy_diff import diff_policy_results
 
 app = FastAPI(title="Enterprise LLM Governance API")
 engine = GovernanceEngine()
@@ -22,10 +24,10 @@ app.add_middleware(
 
 # ---------- Models ----------
 class Finding(BaseModel):
+    evaluator: str
     category: str
     severity: str
     message: str
-    evaluator: str
 
 
 class VersionResult(BaseModel):
@@ -37,6 +39,7 @@ class VersionResult(BaseModel):
 class CompareResponse(BaseModel):
     comparisons: Dict[str, VersionResult]
     recommended_version: str
+    policy_version: str
     timestamp: str
 
 
@@ -50,6 +53,13 @@ class AuditRecord(BaseModel):
     question: str
     recommended_version: str
     comparisons: Dict
+    policy_version: Optional[str] = "unknown"
+
+
+class PolicyImpactRequest(BaseModel):
+    question: str
+    old_policy_version: str
+    new_policy_version: str
 
 
 # ---------- APIs ----------
@@ -58,32 +68,66 @@ def compare_prompt_versions(data: EvaluateRequest):
     versions = ["v1", "v2", "v3"]
     comparisons = {}
 
+    policy_version = "unknown"
+
     for v in versions:
-        risk, approved, reasons = engine.run(data.question.lower(), v)
-        comparisons[v] = {
-            "risk": risk,
-            "approved": approved,
-            "reasons": reasons,
-        }
+        risk, approved, reasons, policy_version = engine.run(
+            data.question.lower(), v
+        )
+
+        comparisons[v] = VersionResult(
+            risk=risk,
+            approved=approved,
+            reasons=[Finding(**r) for r in reasons]
+        )
 
     recommended = min(
         comparisons.keys(),
-        key=lambda v: ["LOW", "MEDIUM", "HIGH"].index(comparisons[v]["risk"]),
+        key=lambda v: ["LOW", "MEDIUM", "HIGH"].index(comparisons[v].risk)
     )
 
     timestamp = datetime.utcnow().isoformat()
 
     log_audit_event(
         question=data.question,
-        comparisons=comparisons,
+        comparisons={k: v.model_dump() for k, v in comparisons.items()},
         recommended_version=recommended,
+        policy_version=policy_version
     )
 
+    return CompareResponse(
+        comparisons=comparisons,
+        recommended_version=recommended,
+        policy_version=policy_version,
+        timestamp=timestamp
+    )
+
+
+@app.post("/policy/impact")
+def policy_impact_analysis(data: PolicyImpactRequest):
+    policies_data = load_policies()
+    versions = policies_data["versions"]
+
+    if data.old_policy_version not in versions:
+        raise HTTPException(status_code=404, detail="Old policy version not found")
+
+    if data.new_policy_version not in versions:
+        raise HTTPException(status_code=404, detail="New policy version not found")
+
+    old_policy = versions[data.old_policy_version]
+    new_policy = versions[data.new_policy_version]
+
+    old_result = engine.run_with_policy(data.question.lower(), old_policy)
+    new_result = engine.run_with_policy(data.question.lower(), new_policy)
+
+    impact = diff_policy_results(old_result, new_result)
+
     return {
-        "comparisons": comparisons,
-        "recommended_version": recommended,
-        "timestamp": timestamp,
+        "old_policy_version": data.old_policy_version,
+        "new_policy_version": data.new_policy_version,
+        "impact": impact
     }
+
 
 
 @app.get("/audit/logs", response_model=List[AuditRecord])

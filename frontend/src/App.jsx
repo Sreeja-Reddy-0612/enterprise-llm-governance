@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./index.css";
 
 function App() {
   const [promptVersion, setPromptVersion] = useState("v1");
   const [question, setQuestion] = useState("");
   const [result, setResult] = useState(null);
+  const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -53,6 +54,21 @@ function App() {
       setLoading(false);
     }
   };
+
+  const fetchAuditLogs = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/audit/logs");
+      if (!res.ok) return;
+      const data = await res.json();
+      setAuditLogs(data);
+    } catch (err) {
+      console.error("Failed to load audit logs", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchAuditLogs();
+  }, []);
 
   return (
     <div className="container">
@@ -119,6 +135,22 @@ function App() {
             ✅ Recommended Prompt Version:{" "}
             {result.recommended_version.toUpperCase()}
           </h3>
+        </div>
+      )}
+
+      {auditLogs.length > 0 && (
+        <div className="result" style={{ marginTop: 16 }}>
+          <h2>🕒 Audit History</h2>
+
+          {auditLogs.map((log, idx) => (
+            <div key={idx} style={{ marginBottom: "12px" }}>
+              <strong>{new Date(log.timestamp).toLocaleString()}</strong>
+              <br />
+              <b>Question:</b> {log.question}
+              <br />
+              <b>Recommended:</b> {log.recommended_version.toUpperCase()}
+            </div>
+          ))}
         </div>
       )}
     </div>

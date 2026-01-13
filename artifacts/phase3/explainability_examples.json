@@ -1,0 +1,13 @@
+{
+  "_comment": "Commit: stabilize governance API with semantic and rule-based evaluators",
+  "example": {
+    "risk": "MEDIUM",
+    "approved": false,
+    "reason": {
+      "category": "Hallucination Risk",
+      "severity": "MEDIUM",
+      "message": "Speculative language detected ('likely')",
+      "source": "HallucinationEvaluator"
+    }
+  }
+}

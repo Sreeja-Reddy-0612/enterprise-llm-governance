@@ -1,0 +1,14 @@
+{
+  "_comment": "Commit: Initial commit – enterprise LLM governance system with frontend and backend",
+  "endpoint": "/evaluate",
+  "method": "POST",
+  "request": {
+    "prompt_version": "string (v1 | v2 | v3)",
+    "question": "string"
+  },
+  "response": {
+    "risk_level": "LOW | MEDIUM | HIGH",
+    "approved": "boolean",
+    "reasons": ["string"]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "_comment": "Commit: add prompt version comparison and recommendation logic",
+  "comparison": {
+    "v1": { "risk": "MEDIUM", "approved": false },
+    "v2": { "risk": "MEDIUM", "approved": false },
+    "v3": { "risk": "HIGH", "approved": false }
+  },
+  "recommended_version": "v1"
+}

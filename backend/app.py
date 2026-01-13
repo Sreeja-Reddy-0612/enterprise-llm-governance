@@ -1,11 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List , Dict
+from typing import Dict, List
 from engine.governance_engine import GovernanceEngine
+from engine.audit_models import AuditRecord
+from engine.audit_logger import log_audit
 
-engine = GovernanceEngine()
 app = FastAPI(title="Enterprise LLM Governance API")
+engine = GovernanceEngine()
 
 # ---------- CORS ----------
 app.add_middleware(
@@ -16,23 +18,64 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------- Request & Response Models ----------
+# ---------- Request Models ----------
+class CompareRequest(BaseModel):
+    prompt_version: str
+    question: str
+
+# ---------- Response Models ----------
+class Finding(BaseModel):
+    category: str
+    severity: str
+    message: str
+
+class VersionResult(BaseModel):
+    risk: str
+    approved: bool
+    reasons: List[Finding]
+
+class CompareResponse(BaseModel):
+    comparisons: Dict[str, VersionResult]
+    recommended_version: str
+
 class EvaluateRequest(BaseModel):
     prompt_version: str
     question: str
 
 
-class EvaluateResponse(BaseModel):
-    risk_level: str
-    approved: bool
-    reasons: List[Dict]
-
 # ---------- API Endpoint ----------
-@app.post("/evaluate", response_model=EvaluateResponse)
-def evaluate_prompt(data: EvaluateRequest):
-    risk, approved, reasons = engine.run(data.question.lower())
+@app.post("/compare")
+def compare_prompt_versions(data: EvaluateRequest):
+    versions = ["v1", "v2", "v3"]
+    comparisons = {}
+
+    for v in versions:
+        risk, approved, reasons = engine.run(data.question.lower(), v)
+
+        record = AuditRecord(
+            evaluation_id=AuditRecord.create_id(),
+            prompt_version=v,
+            question=data.question,
+            risk_level=risk,
+            approved=approved,
+            reasons=reasons,
+            timestamp=AuditRecord.now()
+        )
+
+        log_audit(record)
+
+        comparisons[v] = {
+            "risk": risk,
+            "approved": approved,
+            "reasons": reasons
+        }
+
+    recommended = min(
+        comparisons.keys(),
+        key=lambda v: ["LOW", "MEDIUM", "HIGH"].index(comparisons[v]["risk"])
+    )
+
     return {
-        "risk_level": risk,
-        "approved": approved,
-        "reasons": reasons
+        "comparisons": comparisons,
+        "recommended_version": recommended
     }

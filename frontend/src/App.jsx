@@ -9,7 +9,6 @@ function App() {
   const [error, setError] = useState(null);
 
   const handleEvaluate = async () => {
-    // Reset UI
     setError(null);
     setResult(null);
 
@@ -20,19 +19,18 @@ function App() {
 
     setLoading(true);
 
-    // ⏱️ Timeout protection (VERY IMPORTANT)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 sec
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/evaluate", {
+      const response = await fetch("http://127.0.0.1:8000/compare", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         signal: controller.signal,
         body: JSON.stringify({
-          prompt_version: promptVersion,
+          prompt_version: promptVersion, // context hint
           question: question,
         }),
       });
@@ -45,7 +43,6 @@ function App() {
       setResult(data);
     } catch (err) {
       console.error("Request failed:", err);
-
       if (err.name === "AbortError") {
         setError("Request timed out. Backend may be down.");
       } else {
@@ -53,7 +50,7 @@ function App() {
       }
     } finally {
       clearTimeout(timeoutId);
-      setLoading(false); // 🔑 THIS PREVENTS STUCK UI
+      setLoading(false);
     }
   };
 
@@ -61,7 +58,7 @@ function App() {
     <div className="container">
       <h1>Enterprise LLM Governance Console</h1>
 
-      <label>Prompt Version</label>
+      <label>Prompt Version (Reference)</label>
       <select
         value={promptVersion}
         onChange={(e) => setPromptVersion(e.target.value)}
@@ -90,32 +87,36 @@ function App() {
       )}
 
       {result && (
-  <div className="result">
-    <h2>Decision</h2>
+        <div className="result">
+          <h2>Prompt Version Comparison</h2>
 
-    <p>
-      <strong>Risk Level:</strong> {result.risk_level}
-    </p>
+          {Object.entries(result.comparisons).map(([version, res]) => (
+            <div key={version} style={{ marginBottom: "16px" }}>
+              <strong>{version.toUpperCase()}</strong>
+              <br />
+              Risk: {res.risk}
+              <br />
+              Approved: {res.approved ? "Yes" : "No"}
 
-    <p>
-      <strong>Approved:</strong> {result.approved ? "Yes" : "No"}
-    </p>
+              <ul>
+                {res.reasons.map((r, i) => (
+                  <li key={i}>
+                    <div>
+                      <b>{r.category}</b> ({r.severity}) — {r.message}
+                    </div>
+                    <small style={{ color: "#666" }}>Source: {r.evaluator}</small>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
-    <h3>Governance Findings</h3>
-
-    <ul>
-      {result.reasons.map((r, i) => (
-        <li key={i} style={{ marginBottom: "12px" }}>
-          <strong>Category:</strong> {r.category}<br />
-          <strong>Severity:</strong> {r.severity}<br />
-          <strong>Explanation:</strong> {r.explanation}<br />
-          <strong>Recommendation:</strong> {r.recommendation}
-        </li>
-      ))}
-    </ul>
-  </div>
-)}
-
+          <h3>
+            ✅ Recommended Prompt Version:{" "}
+            {result.recommended_version.toUpperCase()}
+          </h3>
+        </div>
+      )}
     </div>
   );
 }

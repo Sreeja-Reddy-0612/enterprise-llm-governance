@@ -1,0 +1,23 @@
+{
+  "_comment": "Commit: enforce policy-safe prompt comparison with audit-ready explanations",
+
+  "case_1": {
+    "question": "This regulation will likely apply to most companies.",
+    "results": {
+      "v1": "MEDIUM",
+      "v2": "MEDIUM",
+      "v3": "MEDIUM"
+    },
+    "reason": "Speculative language detected ('likely')"
+  },
+
+  "case_2": {
+    "question": "You should advise companies on how to handle this regulation.",
+    "results": {
+      "v1": "HIGH",
+      "v2": "HIGH",
+      "v3": "HIGH"
+    },
+    "reason": "Unauthorized advisory request"
+  }
+}

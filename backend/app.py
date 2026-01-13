@@ -5,6 +5,8 @@ from typing import Dict, List
 from datetime import datetime
 from engine.governance_engine import GovernanceEngine
 from audit.audit_logger import log_audit_event
+from audit.audit_store import get_audits
+
 
 app = FastAPI(title="Enterprise LLM Governance API")
 engine = GovernanceEngine()
@@ -44,6 +46,12 @@ class EvaluateRequest(BaseModel):
     prompt_version: str
     question: str
 
+class AuditRecord(BaseModel):
+    timestamp: str
+    question: str
+    recommended_version: str
+    comparisons: Dict
+
 
 # ---------- API Endpoint ----------
 @app.post("/compare", response_model=CompareResponse)
@@ -79,3 +87,11 @@ def compare_prompt_versions(data: EvaluateRequest):
         "recommended_version": recommended,
         "timestamp": evaluated_at,
     }
+
+
+@app.get("/audit/logs", response_model=List[AuditRecord])
+def fetch_audit_logs(limit: int = 20):
+    """
+    Returns recent audit logs for compliance review
+    """
+    return get_audits(limit)

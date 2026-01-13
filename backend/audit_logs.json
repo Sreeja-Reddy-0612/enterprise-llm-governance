@@ -391,5 +391,49 @@
         ]
       }
     }
+  },
+  {
+    "timestamp": "2026-01-13T18:19:31.922504",
+    "policy_version": "v1",
+    "question": "This regulation likely applies based on typical cases.",
+    "recommended_version": "v1",
+    "comparisons": {
+      "v1": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')"
+          }
+        ]
+      },
+      "v2": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')"
+          }
+        ]
+      },
+      "v3": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')"
+          }
+        ]
+      }
+    }
   }
 ]

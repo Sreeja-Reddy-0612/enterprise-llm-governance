@@ -3,11 +3,19 @@
   "versions": {
     "v1": {
       "hallucination_threshold": "MEDIUM",
-      "description": "Default governance policy"
+      "description": "Default governance policy",
+      "status": "ACTIVE",
+      "created_at": "2026-01-13T10:00:00Z",
+      "approved_by": "system",
+      "approved_at": "2026-01-13T10:00:00Z"
     },
     "v2": {
       "hallucination_threshold": "HIGH",
-      "description": "Strict governance policy"
+      "description": "Stricter governance policy",
+      "status": "APPROVED",
+      "created_at": "2026-01-13T17:30:00Z",
+      "approved_by": "compliance_admin",
+      "approved_at": "2026-01-13T17:40:00Z"
     }
   }
 }

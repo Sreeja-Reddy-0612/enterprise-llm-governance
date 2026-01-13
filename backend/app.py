@@ -1,12 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List
 from datetime import datetime
+
 from engine.governance_engine import GovernanceEngine
 from audit.audit_logger import log_audit_event
-from audit.audit_store import get_audits
-
+from audit.audit_store import get_audits, get_audit_by_index
 
 app = FastAPI(title="Enterprise LLM Governance API")
 engine = GovernanceEngine()
@@ -20,31 +20,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---------- Request Models ----------
-class CompareRequest(BaseModel):
-    prompt_version: str
-    question: str
-
-# ---------- Response Models ----------
+# ---------- Models ----------
 class Finding(BaseModel):
     category: str
     severity: str
     message: str
     evaluator: str
 
+
 class VersionResult(BaseModel):
     risk: str
     approved: bool
     reasons: List[Finding]
+
 
 class CompareResponse(BaseModel):
     comparisons: Dict[str, VersionResult]
     recommended_version: str
     timestamp: str
 
+
 class EvaluateRequest(BaseModel):
     prompt_version: str
     question: str
+
 
 class AuditRecord(BaseModel):
     timestamp: str
@@ -53,7 +52,7 @@ class AuditRecord(BaseModel):
     comparisons: Dict
 
 
-# ---------- API Endpoint ----------
+# ---------- APIs ----------
 @app.post("/compare", response_model=CompareResponse)
 def compare_prompt_versions(data: EvaluateRequest):
     versions = ["v1", "v2", "v3"]
@@ -64,34 +63,37 @@ def compare_prompt_versions(data: EvaluateRequest):
         comparisons[v] = {
             "risk": risk,
             "approved": approved,
-            "reasons": reasons
+            "reasons": reasons,
         }
 
     recommended = min(
         comparisons.keys(),
-        key=lambda v: ["LOW", "MEDIUM", "HIGH"].index(comparisons[v]["risk"])
+        key=lambda v: ["LOW", "MEDIUM", "HIGH"].index(comparisons[v]["risk"]),
     )
 
-    # Evaluate timestamp and audit log
-    evaluated_at = datetime.utcnow().isoformat()
+    timestamp = datetime.utcnow().isoformat()
 
-    # 🔐 AUDIT LOGGING (Phase 6 – Step 1)
     log_audit_event(
         question=data.question,
         comparisons=comparisons,
-        recommended_version=recommended
+        recommended_version=recommended,
     )
 
     return {
         "comparisons": comparisons,
         "recommended_version": recommended,
-        "timestamp": evaluated_at,
+        "timestamp": timestamp,
     }
 
 
 @app.get("/audit/logs", response_model=List[AuditRecord])
 def fetch_audit_logs(limit: int = 20):
-    """
-    Returns recent audit logs for compliance review
-    """
     return get_audits(limit)
+
+
+@app.get("/audit/logs/{index}", response_model=AuditRecord)
+def fetch_audit_detail(index: int):
+    record = get_audit_by_index(index)
+    if not record:
+        raise HTTPException(status_code=404, detail="Audit record not found")
+    return record

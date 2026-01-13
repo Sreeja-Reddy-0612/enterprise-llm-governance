@@ -6,6 +6,7 @@ function App() {
   const [question, setQuestion] = useState("");
   const [result, setResult] = useState(null);
   const [auditLogs, setAuditLogs] = useState([]);
+  const [selectedAudit, setSelectedAudit] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -52,6 +53,20 @@ function App() {
     } finally {
       clearTimeout(timeoutId);
       setLoading(false);
+    }
+  };
+
+  const fetchAuditDetail = async (index) => {
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/audit/logs/${index}`);
+      if (!res.ok) {
+        console.error("Failed to fetch audit detail", res.status);
+        return;
+      }
+      const data = await res.json();
+      setSelectedAudit(data);
+    } catch (err) {
+      console.error("Failed to fetch audit detail", err);
     }
   };
 
@@ -142,13 +157,15 @@ function App() {
         <div className="result" style={{ marginTop: 16 }}>
           <h2>🕒 Audit History</h2>
 
-          {auditLogs.map((log, idx) => (
-            <div key={idx} style={{ marginBottom: "12px" }}>
+          {auditLogs.map((log, index) => (
+            <div key={index} style={{ marginBottom: "12px" }}>
               <strong>{new Date(log.timestamp).toLocaleString()}</strong>
               <br />
               <b>Question:</b> {log.question}
               <br />
               <b>Recommended:</b> {log.recommended_version.toUpperCase()}
+              <br />
+              <button onClick={() => fetchAuditDetail(index)}>View Details</button>
             </div>
           ))}
         </div>

@@ -435,5 +435,93 @@
         ]
       }
     }
+  },
+  {
+    "timestamp": "2026-01-14T13:45:59.395839",
+    "policy_version": "v1",
+    "question": "This regulation likely applies based on typical cases.",
+    "recommended_version": "v1",
+    "comparisons": {
+      "v1": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')"
+          }
+        ]
+      },
+      "v2": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')"
+          }
+        ]
+      },
+      "v3": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "timestamp": "2026-01-14T13:47:25.115440",
+    "policy_version": "v1",
+    "question": "This regulation likely applies based on typical cases.",
+    "recommended_version": "v1",
+    "comparisons": {
+      "v1": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')"
+          }
+        ]
+      },
+      "v2": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')"
+          }
+        ]
+      },
+      "v3": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')"
+          }
+        ]
+      }
+    }
   }
 ]

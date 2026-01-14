@@ -34,6 +34,7 @@ class VersionResult(BaseModel):
     risk: str
     approved: bool
     reasons: List[Finding]
+    explanation: Dict
 
 
 class CompareResponse(BaseModel):
@@ -66,19 +67,24 @@ class PolicyImpactRequest(BaseModel):
 @app.post("/compare", response_model=CompareResponse)
 def compare_prompt_versions(data: EvaluateRequest):
     versions = ["v1", "v2", "v3"]
-    comparisons = {}
+    comparisons: Dict[str, VersionResult] = {}
 
     policy_version = "unknown"
 
     for v in versions:
-        risk, approved, reasons, policy_version = engine.run(
-            data.question.lower(), v
-        )
+        (
+            risk,
+            approved,
+            reasons,
+            policy_version,
+            explanation
+        ) = engine.run(data.question.lower(), v)
 
         comparisons[v] = VersionResult(
             risk=risk,
             approved=approved,
-            reasons=[Finding(**r) for r in reasons]
+            reasons=[Finding(**r) for r in reasons],
+            explanation=explanation
         )
 
     recommended = min(
@@ -88,9 +94,17 @@ def compare_prompt_versions(data: EvaluateRequest):
 
     timestamp = datetime.utcnow().isoformat()
 
+    # ---- Audit logging (NO explanation duplication here) ----
     log_audit_event(
         question=data.question,
-        comparisons={k: v.model_dump() for k, v in comparisons.items()},
+        comparisons={
+            k: {
+                "risk": v.risk,
+                "approved": v.approved,
+                "reasons": [r.model_dump() for r in v.reasons]
+            }
+            for k, v in comparisons.items()
+        },
         recommended_version=recommended,
         policy_version=policy_version
     )
@@ -127,7 +141,6 @@ def policy_impact_analysis(data: PolicyImpactRequest):
         "new_policy_version": data.new_policy_version,
         "impact": impact
     }
-
 
 
 @app.get("/audit/logs", response_model=List[AuditRecord])

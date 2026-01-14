@@ -2,6 +2,7 @@ from evaluators.hallucination import HallucinationEvaluator
 from evaluators.policy import PolicyEvaluator
 from evaluators.determinism import DeterminismEvaluator
 from policies.policy_loader import get_active_policy
+from engine.explainability import build_explanation
 
 
 class GovernanceEngine:
@@ -11,9 +12,12 @@ class GovernanceEngine:
         self.determinism = DeterminismEvaluator()
 
     def run(self, text: str, prompt_version: str):
+        # Load active policy
         policy_version, policy = get_active_policy()
+
         reasons = []
 
+        # ---- Hallucination check (example rule) ----
         if "likely" in text:
             reasons.append({
                 "evaluator": "HallucinationEvaluator",
@@ -22,17 +26,31 @@ class GovernanceEngine:
                 "message": "Speculative language detected ('likely')"
             })
 
-        risk = (
-            "HIGH" if any(r["severity"] == "HIGH" for r in reasons)
-            else "MEDIUM" if reasons
-            else "LOW"
-        )
+        # ---- Risk calculation ----
+        if any(r["severity"] == "HIGH" for r in reasons):
+            risk = "HIGH"
+        elif reasons:
+            risk = "MEDIUM"
+        else:
+            risk = "LOW"
 
         approved = risk == "LOW"
 
-        return risk, approved, reasons, policy_version
+        # ---- Explainability ----
+        explanation = build_explanation(
+            prompt_version=prompt_version,
+            risk=risk,
+            approved=approved,
+            reasons=reasons,
+            policy_version=policy_version
+        )
+
+        return risk, approved, reasons, policy_version, explanation
 
     def run_with_policy(self, text: str, policy: dict):
+        """
+        Used for policy impact analysis (Phase 6 – Step 4.2)
+        """
         reasons = []
 
         if "likely" in text:
@@ -43,11 +61,12 @@ class GovernanceEngine:
                 "message": "Speculative language detected ('likely')"
             })
 
-        risk = (
-            "HIGH" if any(r["severity"] == "HIGH" for r in reasons)
-            else "MEDIUM" if reasons
-            else "LOW"
-        )
+        if any(r["severity"] == "HIGH" for r in reasons):
+            risk = "HIGH"
+        elif reasons:
+            risk = "MEDIUM"
+        else:
+            risk = "LOW"
 
         approved = risk == "LOW"
 

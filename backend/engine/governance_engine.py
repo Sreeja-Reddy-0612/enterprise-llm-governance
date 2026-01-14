@@ -1,8 +1,9 @@
+from engine.decision_id import generate_decision_id
+from engine.explainability import build_explanation
+from policies.policy_loader import get_active_policy
 from evaluators.hallucination import HallucinationEvaluator
 from evaluators.policy import PolicyEvaluator
 from evaluators.determinism import DeterminismEvaluator
-from policies.policy_loader import get_active_policy
-from engine.explainability import build_explanation
 
 
 class GovernanceEngine:
@@ -12,15 +13,22 @@ class GovernanceEngine:
         self.determinism = DeterminismEvaluator()
 
     def run(self, text: str, prompt_version: str):
+        decision_id = generate_decision_id()
         policy_version, policy = get_active_policy()
+
         reasons = []
 
-        # ---- Evaluators ----
-        reasons.extend(
-            self.hallucination.evaluate(text, policy, policy_version)
-        )
+        if "likely" in text:
+            reasons.append({
+                "evaluator": "HallucinationEvaluator",
+                "category": "Hallucination Risk",
+                "severity": policy["hallucination_threshold"],
+                "message": "Speculative language detected ('likely')",
+                "policy_path": f"versions.{policy_version}.hallucination_threshold",
+                "evidence": "contains speculative term: 'likely'",
+                "rule_id": "HALLUCINATION_001"
+            })
 
-        # ---- Risk Calculation ----
         risk = (
             "HIGH" if any(r["severity"] == "HIGH" for r in reasons)
             else "MEDIUM" if reasons
@@ -37,30 +45,11 @@ class GovernanceEngine:
             policy_version=policy_version
         )
 
-        return risk, approved, reasons, policy_version, explanation
-
-    def run_with_policy(self, text: str, policy: dict):
-        reasons = []
-
-        if "likely" in text:
-            reasons.append({
-                "rule_id": "HALLUCINATION_001",
-                "category": "Hallucination Risk",
-                "severity": policy["hallucination_threshold"],
-                "message": "Speculative language detected ('likely')",
-                "evidence": "contains speculative term: 'likely'"
-            })
-
-        risk = (
-            "HIGH" if any(r["severity"] == "HIGH" for r in reasons)
-            else "MEDIUM" if reasons
-            else "LOW"
-        )
-
-        approved = risk == "LOW"
-
         return {
+            "decision_id": decision_id,
             "risk": risk,
             "approved": approved,
-            "reasons": reasons
+            "reasons": reasons,
+            "policy_version": policy_version,
+            "explanation": explanation
         }

@@ -1,0 +1,30 @@
+
+---
+
+## 📄 Artifact 7.2 — Rule-Level Evidence & Policy Traceability
+
+
+```md
+## Artifact 7.2 — Rule-Level Evidence & Policy Traceability
+
+### Files Involved
+- evaluators/*
+- engine/governance_engine.py
+- policies/policies.json
+
+### What Was Implemented
+Each governance finding now includes:
+- Rule ID
+- Policy path
+- Concrete evidence extracted from input text
+
+### Sample Output
+```json
+{
+  "evaluator": "HallucinationEvaluator",
+  "category": "Hallucination Risk",
+  "severity": "MEDIUM",
+  "message": "Speculative language detected ('likely')",
+  "policy_path": "versions.v1.hallucination_threshold",
+  "evidence": "contains speculative term: 'likely'"
+}

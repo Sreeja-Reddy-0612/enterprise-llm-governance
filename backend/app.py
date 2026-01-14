@@ -9,6 +9,7 @@ from audit.audit_logger import log_audit_event
 from audit.audit_store import get_audits, get_audit_by_index
 from policies.policy_loader import load_policies
 from policies.policy_diff import diff_policy_results
+from metrics.governance_metrics import compute_governance_metrics
 
 app = FastAPI(title="Enterprise LLM Governance API")
 engine = GovernanceEngine()
@@ -153,3 +154,10 @@ def fetch_audit_detail(index: int):
     if not record:
         raise HTTPException(status_code=404, detail="Audit record not found")
     return record
+
+@app.get("/metrics/governance")
+def governance_metrics(limit: int = 100):
+    """
+    Returns aggregated governance metrics derived from audit logs.
+    """
+    return compute_governance_metrics(limit)

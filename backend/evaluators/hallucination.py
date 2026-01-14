@@ -1,20 +1,21 @@
 from engine.evaluation_result import EvaluationResult
 
 class HallucinationEvaluator:
-    SPECULATIVE_WORDS = ["likely", "probably", "may", "might", "could"]
+    RULE_ID = "HALLUCINATION_001"
+    POLICY_PATH = "versions.{version}.hallucination_threshold"
 
-    def evaluate(self, text: str):
-        results = []
+    def evaluate(self, text: str, policy: dict, policy_version: str):
+        findings = []
 
-        for word in self.SPECULATIVE_WORDS:
-            if word in text:
-                results.append(
-                    EvaluationResult(
-                        id="HALLUCINATION_01",
-                        severity="MEDIUM",
-                        message=f"Speculative language detected ('{word}')"
-                    )
-                )
-                break
+        if "likely" in text:
+            findings.append({
+                "rule_id": self.RULE_ID,
+                "evaluator": "HallucinationEvaluator",
+                "category": "Hallucination Risk",
+                "severity": policy["hallucination_threshold"],
+                "message": "Speculative language detected ('likely')",
+                "policy_path": self.POLICY_PATH.format(version=policy_version),
+                "evidence": "contains speculative term: 'likely'"
+            })
 
-        return results
+        return findings

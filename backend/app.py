@@ -28,6 +28,8 @@ class Finding(BaseModel):
     category: str
     severity: str
     message: str
+    policy_path: Optional[str] = None
+    evidence: Optional[str] = None
 
 
 class VersionResult(BaseModel):

@@ -523,5 +523,105 @@
         ]
       }
     }
+  },
+  {
+    "timestamp": "2026-01-14T15:45:41.640839",
+    "policy_version": "v1",
+    "question": "This regulation likely applies based on typical cases.\n",
+    "recommended_version": "v1",
+    "comparisons": {
+      "v1": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')",
+            "policy_path": "versions.v1.hallucination_threshold",
+            "evidence": "contains speculative term: 'likely'"
+          }
+        ]
+      },
+      "v2": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')",
+            "policy_path": "versions.v1.hallucination_threshold",
+            "evidence": "contains speculative term: 'likely'"
+          }
+        ]
+      },
+      "v3": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')",
+            "policy_path": "versions.v1.hallucination_threshold",
+            "evidence": "contains speculative term: 'likely'"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "timestamp": "2026-01-14T15:51:06.265807",
+    "policy_version": "v1",
+    "question": "This regulation likely applies based on typical cases.",
+    "recommended_version": "v1",
+    "comparisons": {
+      "v1": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')",
+            "policy_path": "versions.v1.hallucination_threshold",
+            "evidence": "contains speculative term: 'likely'"
+          }
+        ]
+      },
+      "v2": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')",
+            "policy_path": "versions.v1.hallucination_threshold",
+            "evidence": "contains speculative term: 'likely'"
+          }
+        ]
+      },
+      "v3": {
+        "risk": "MEDIUM",
+        "approved": false,
+        "reasons": [
+          {
+            "evaluator": "HallucinationEvaluator",
+            "category": "Hallucination Risk",
+            "severity": "MEDIUM",
+            "message": "Speculative language detected ('likely')",
+            "policy_path": "versions.v1.hallucination_threshold",
+            "evidence": "contains speculative term: 'likely'"
+          }
+        ]
+      }
+    }
   }
 ]

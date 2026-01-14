@@ -11,6 +11,7 @@ from policies.policy_loader import load_policies
 from policies.policy_diff import diff_policy_results
 from metrics.governance_metrics import compute_governance_metrics
 from metrics.governance_trends import compute_governance_trends
+from metrics.governance_alerts import generate_governance_alerts
 
 app = FastAPI(title="Enterprise LLM Governance API")
 engine = GovernanceEngine()
@@ -167,3 +168,13 @@ def governance_metrics(limit: int = 100):
 def governance_trends(limit: int = 100):
     audits = get_audits(limit)
     return compute_governance_trends(audits)
+
+@app.get("/metrics/governance/alerts")
+def governance_alerts(limit: int = 100):
+    """
+    Returns governance alerts when thresholds are breached.
+    """
+    return {
+        "generated_at": datetime.utcnow().isoformat(),
+        "alerts": generate_governance_alerts(limit=limit)
+    }

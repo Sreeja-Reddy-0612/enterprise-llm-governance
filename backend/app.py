@@ -10,6 +10,7 @@ from audit.audit_store import get_audits, get_audit_by_index
 from policies.policy_loader import load_policies
 from policies.policy_diff import diff_policy_results
 from metrics.governance_metrics import compute_governance_metrics
+from metrics.governance_trends import compute_governance_trends
 
 app = FastAPI(title="Enterprise LLM Governance API")
 engine = GovernanceEngine()
@@ -161,3 +162,8 @@ def governance_metrics(limit: int = 100):
     Returns aggregated governance metrics derived from audit logs.
     """
     return compute_governance_metrics(limit)
+
+@app.get("/metrics/governance/trends")
+def governance_trends(limit: int = 100):
+    audits = get_audits(limit)
+    return compute_governance_trends(audits)
